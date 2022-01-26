@@ -6,6 +6,7 @@ from tool.region_loss import RegionLoss
 from tool.yolo_layer import YoloLayer
 from tool.config import *
 from tool.torch_utils import *
+from pathlib import PurePath
 
 
 class Mish(torch.nn.Module):
@@ -141,7 +142,7 @@ class Darknet(nn.Module):
 
         self.header = torch.IntTensor([0, 0, 0, 0])
         self.seen = 0
-        self.model_name = cfgfile.split('/')[-1].split('.')[0]
+        self.model_name = PurePath(cfgfile).stem
 
     def forward(self, x):
         ind = -2
@@ -263,7 +264,7 @@ class Darknet(nn.Module):
                 elif activation == 'mish':
                     model.add_module('mish{0}'.format(conv_id), Mish())
                 else:
-                    print("convalution havn't activate {}".format(activation))
+                    print("convolution with activation {}: Not added to the model".format(activation))
 
                 prev_filters = filters
                 out_filters.append(prev_filters)
@@ -396,7 +397,7 @@ class Darknet(nn.Module):
                 yolo_layer.num_anchors = int(block['num'])
                 yolo_layer.anchor_step = len(yolo_layer.anchors) // yolo_layer.num_anchors
                 yolo_layer.stride = prev_stride
-                if blocks.get('scale_x_y'):
+                if block.get('scale_x_y'):
                     yolo_layer.scale_x_y = float(block['scale_x_y'])
                 # yolo_layer.object_scale = float(block['object_scale'])
                 # yolo_layer.noobject_scale = float(block['noobject_scale'])
