@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
@@ -57,11 +58,7 @@ class Upsample_expand(nn.Module):
     def forward(self, x):
         assert (x.data.dim() == 4)
         
-        x = x.view(x.size(0), x.size(1), x.size(2), 1, x.size(3), 1).\
-            expand(x.size(0), x.size(1), x.size(2), self.stride, x.size(3), self.stride).contiguous().\
-            view(x.size(0), x.size(1), x.size(2) * self.stride, x.size(3) * self.stride)
-
-        return x
+        return F.interpolate(x, scale_factor=self.stride, mode='nearest')
 
 
 class Upsample_interpolate(nn.Module):
@@ -144,6 +141,7 @@ class Darknet(nn.Module):
 
         self.header = torch.IntTensor([0, 0, 0, 0])
         self.seen = 0
+        self.model_name = cfgfile.split('/')[-1].split('.')[0]
 
     def forward(self, x):
         ind = -2
@@ -398,7 +396,8 @@ class Darknet(nn.Module):
                 yolo_layer.num_anchors = int(block['num'])
                 yolo_layer.anchor_step = len(yolo_layer.anchors) // yolo_layer.num_anchors
                 yolo_layer.stride = prev_stride
-                yolo_layer.scale_x_y = float(block['scale_x_y'])
+                if blocks.get('scale_x_y'):
+                    yolo_layer.scale_x_y = float(block['scale_x_y'])
                 # yolo_layer.object_scale = float(block['object_scale'])
                 # yolo_layer.noobject_scale = float(block['noobject_scale'])
                 # yolo_layer.class_scale = float(block['class_scale'])

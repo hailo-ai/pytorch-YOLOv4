@@ -25,11 +25,11 @@ def main(cfg_file, weight_file, image_path, batch_size):
     print("The model expects input shape: ", session.get_inputs()[0].shape)
 
     image_src = cv2.imread(image_path)
-    detect(session, image_src)
+    detect(session, image_src, cfg_file)
 
 
 
-def detect(session, image_src):
+def detect(session, image_src, cfg_file):
     IN_IMAGE_H = session.get_inputs()[0].shape[2]
     IN_IMAGE_W = session.get_inputs()[0].shape[3]
 
@@ -48,13 +48,13 @@ def detect(session, image_src):
 
     boxes = post_processing(img_in, 0.4, 0.6, outputs)
 
-    num_classes = 80
-    if num_classes == 20:
+    model = Darknet(cfg_file)
+    if model.num_classes == 20:
         namesfile = 'data/voc.names'
-    elif num_classes == 80:
+    elif model.num_classes == 80:
         namesfile = 'data/coco.names'
     else:
-        namesfile = 'data/names'
+        namesfile = 'data/custom.names'
 
     class_names = load_class_names(namesfile)
     plot_boxes_cv2(image_src, boxes[0], savename='predictions_onnx.jpg', class_names=class_names)
