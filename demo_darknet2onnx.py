@@ -54,7 +54,7 @@ def detect(session, image_src, cfg_file):
     elif model.num_classes == 80:
         namesfile = 'data/coco.names'
     else:
-        namesfile = 'data/custom.names'
+        namesfile = 'data/obj.names'
 
     class_names = load_class_names(namesfile)
     plot_boxes_cv2(image_src, boxes[0], savename='predictions_onnx.jpg', class_names=class_names)
